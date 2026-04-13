@@ -2,9 +2,107 @@
 <html>
 <head>
   <title>Team Up Now</title>
+  <style>
+    body { font-family: Arial; background:#0f172a; color:white; padding:20px; }
+    input, button { padding:10px; margin:5px; }
+    .box { background:#1e293b; padding:15px; margin-top:10px; }
+  </style>
 </head>
-<body style="background:black; color:white; text-align:center;">
-  <h1>🔥 Team Up Now Working</h1>
-  <p>Your app is live now.</p>
+<body>
+
+<h2>🔥 Team Up Now</h2>
+
+<input id="user" placeholder="Enter username">
+<button onclick="login()">Login</button>
+
+<div id="app" style="display:none">
+
+<div class="box">
+  <h3>Streak: <span id="streak">0</span></h3>
+  <button onclick="check()">Daily Check</button>
+</div>
+
+<div class="box">
+  <h3>Chat</h3>
+  <div id="chat"></div>
+  <input id="msg">
+  <button onclick="send()">Send</button>
+</div>
+
+<div class="box">
+  <h3>Leaderboard</h3>
+  <div id="board"></div>
+</div>
+
+</div>
+
+<script>
+let u;
+
+function login(){
+  u=document.getElementById("user").value;
+  if(!u) return;
+  localStorage.setItem("user",u);
+
+  if(!localStorage.getItem(u)){
+    localStorage.setItem(u,JSON.stringify({streak:0,last:0}));
+  }
+
+  document.getElementById("app").style.display="block";
+  update();
+}
+
+function check(){
+  let d=JSON.parse(localStorage.getItem(u));
+  let today=new Date().toDateString();
+
+  if(d.last!==today){
+    d.streak++;
+    d.last=today;
+  }
+
+  localStorage.setItem(u,JSON.stringify(d));
+  update();
+}
+
+function send(){
+  let m=document.getElementById("msg").value;
+  let c=JSON.parse(localStorage.getItem("chat")||"[]");
+  c.push(u+": "+m);
+  localStorage.setItem("chat",JSON.stringify(c));
+  document.getElementById("msg").value="";
+  loadChat();
+}
+
+function loadChat(){
+  let c=JSON.parse(localStorage.getItem("chat")||"[]");
+  document.getElementById("chat").innerHTML=c.join("<br>");
+}
+
+function update(){
+  let d=JSON.parse(localStorage.getItem(u));
+  document.getElementById("streak").innerText=d.streak;
+  loadChat();
+  loadBoard();
+}
+
+function loadBoard(){
+  let arr=[];
+  for(let k in localStorage){
+    try{
+      let d=JSON.parse(localStorage.getItem(k));
+      if(d.streak!==undefined){
+        arr.push({name:k,streak:d.streak});
+      }
+    }catch{}
+  }
+
+  arr.sort((a,b)=>b.streak-a.streak);
+
+  document.getElementById("board").innerHTML=
+    arr.map(x=>x.name+" 🔥 "+x.streak).join("<br>");
+}
+</script>
+
 </body>
 </html>
